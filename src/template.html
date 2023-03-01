@@ -7,6 +7,53 @@
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
   <body>
-    <h1>ASDaasasdasdasdsasdasdaasdasdasd asddasd</h1>
+
+    <div id="mainlogo"><img src="/src/assets/LOGO.png" id="logo" alt=""></div>
+    
+    <div class="container" id="videogrid"></div>
+    <script type="text/javascript">
+      const url = "https://services.brid.tv/services/get/latest/26456/0/1/25/0.json";
+      const CACHE_KEY = 'bridTVVideos';
+      const CACHE_EXPIRY = 5 * 60 * 1000; 
+
+      const getVideos = async () => {
+        let videos = [];
+        const cachedResult = localStorage.getItem(CACHE_KEY);
+        if (cachedResult) {
+          const { data, timestamp } = JSON.parse(cachedResult);
+          if (Date.now() - timestamp < CACHE_EXPIRY) {
+            videos = data;
+          }
+        }
+        if (!videos.length) {
+          const res = await fetch(url);
+          const data = await res.json();
+          data.Video.map((video) => {
+            videos.push(video);
+          });
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ data: videos, timestamp: Date.now() }));
+        }
+        for (k in videos) {
+          let parent = document.querySelector(".container");
+          let d = document.createElement("div");
+          parent.appendChild(d);
+          d.id = `DIV_ID_${videos[k].id}`;
+          _bp.push({
+            div: `DIV_ID_${videos[k].id}`,
+            name: `${videos[k].name}`,
+            obj: { id: "26456", width: "350", height: "290",  video: `${videos[k].id}` },
+          });
+        }
+      };
+
+      var _bp = _bp || [];
+
+      const bridScript = document.createElement('script');
+      bridScript.src = '//services.brid.tv/player/build/brid.min.js';
+      bridScript.onload = () => {
+        getVideos();
+      };
+      document.body.appendChild(bridScript);
+    </script>
   </body>
 </html>
